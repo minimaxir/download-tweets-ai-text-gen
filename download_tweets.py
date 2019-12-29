@@ -23,34 +23,6 @@ def is_reply(tweet):
         return True
     return False
 
-
-def get_tweets_text(username, limit, pattern, include_replies):
-    """
-    Returns a list of cleaned Tweets from the specified username.
-    """
-
-    c = twint.Config()
-    c.Store_object = True
-    c.Hide_output = True
-    c.Username = username
-    c.Limit = limit
-
-    # Run the tweet search (may take awhile)
-    print("Retrieving tweets for @{}...".format(username))
-    twint.run.Search(c)
-    assert len(twint.output.tweets_list) > 0, "No tweets were returned."
-
-    if include_replies:
-        tweets = [re.sub(pattern, '', tweet.tweet).strip()
-                  for tweet in twint.output.tweets_list
-                  if not is_reply(tweet)]
-    else:
-        tweets = [re.sub(pattern, '', tweet.tweet).strip()
-                  for tweet in twint.output.tweets_list]
-
-    return tweets
-
-
 def download_tweets(username=None, limit=None, include_replies=False,
                     strip_usertags=True, strip_hashtags=False):
     """Generates a twcloud of any public Twitter account or search query!
@@ -74,14 +46,41 @@ def download_tweets(username=None, limit=None, include_replies=False,
     if strip_hashtags:
         pattern += r'|#[a-zA-Z0-9_]+'
 
-    tweets = get_tweets_text(username, limit, pattern, include_replies)
+    c = twint.Config()
+    c.Store_object = True
+    c.Hide_output = True
+    c.Username = username
+    c.Limit = limit
+    c.Custom['tweet'] = ['id', 'tweet', 'reply_to']
+    since = None
+
+    print("Retrieving tweets for @{}...".format(username))
 
     with open('{}_tweets.csv'.format(username), 'w', encoding='utf8') as f:
         w = csv.writer(f)
-        w.writerow(['tweets'])  # gpt-2-simple expects a header by default
-        for tweet in tweets:
-            if tweet != '':
-                w.writerow([tweet])
+        w.writerow(['tweets'])  # gpt-2-simple expects a CSV header by default
+
+        for _ in range((limit // 20)):
+            tweet_data = []
+            c.Since = since
+            c.Store_object_tweets_list = tweet_data
+
+            twint.run.Search(c)
+
+            if include_replies:
+                tweets = [re.sub(pattern, '', tweet.tweet).strip()
+                          for tweet in tweet_data
+                          if not is_reply(tweet)]
+            else:
+                tweets = [re.sub(pattern, '', tweet.tweet).strip()
+                          for tweet in tweet_data]
+
+            for tweet in tweets:
+                if tweet != '':
+                    w.writerow([tweet])
+
+            print(len(tweet_data))
+            since = tweet_data[-1].id
 
 
 if __name__ == "__main__":
