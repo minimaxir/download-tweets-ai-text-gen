@@ -3,6 +3,11 @@ import fire
 import re
 import csv
 from tqdm import tqdm
+import logging
+
+# Surpress twint warnings
+logger = logging.getLogger()
+logger.disabled = True
 
 
 def is_reply(tweet):
@@ -25,7 +30,7 @@ def is_reply(tweet):
     return False
 
 
-def download_tweets(username=None, limit=10000, include_replies=False,
+def download_tweets(username=None, limit=None, include_replies=False,
                     strip_usertags=True, strip_hashtags=False):
     """Generates a twcloud of any public Twitter account or search query!
     See stylecloud docs for additional parameters.
@@ -39,6 +44,16 @@ def download_tweets(username=None, limit=10000, include_replies=False,
     assert username, "You must specify a username to download tweets from."
     if limit:
         assert limit % 20 == 0, "`limit` must be a multiple of 20."
+
+    # If no limit specifed, estimate the total number of tweets from profile.
+    else:
+        c_lookup = twint.Config()
+        c_lookup.Username = username
+        c_lookup.Store_object = True
+        c_lookup.Hide_output = True
+
+        twint.run.Lookup(c_lookup)
+        limit = twint.output.users_list[0].tweets
 
     pattern = r'http\S+|pic.\S+|\xa0|…'
 
@@ -68,6 +83,9 @@ def download_tweets(username=None, limit=10000, include_replies=False,
             c.Store_object_tweets_list = tweet_data
 
             twint.run.Search(c)
+
+            if len(tweet_data) == 0:
+                break
 
             if not include_replies:
                 tweets = [re.sub(pattern, '', tweet.tweet).strip()
