@@ -6,9 +6,9 @@ from tqdm import tqdm
 import logging
 from datetime import datetime
 
-# Surpress some twint warnings
+# Surpress twint warnings which occur for no reason
 logger = logging.getLogger()
-logging.disable(logging.CRITICAL)
+logger.disabled = True
 
 
 def is_reply(tweet):
@@ -75,19 +75,17 @@ def download_tweets(username=None, limit=None, include_replies=False,
         pbar = tqdm(range(limit))
         for _ in range((limit // 20)):
             tweet_data = []
-            
-            c = twint.Config()
-            c.Store_object = True
-            c.Hide_output = True
-            c.Username = username
-            c.Limit = 20
-            c.Until = until
-            c.Store_object_tweets_list = tweet_data
 
-            twint.run.Search(c)
+            while len(tweet_data) == 0:
+                c = twint.Config()
+                c.Store_object = True
+                c.Hide_output = True
+                c.Username = username
+                c.Limit = 20
+                c.Until = until
+                c.Store_object_tweets_list = tweet_data
 
-            if len(tweet_data) == 0:
-                break
+                twint.run.Search(c)
 
             if not include_replies:
                 tweets = [re.sub(pattern, '', tweet.tweet).strip()
