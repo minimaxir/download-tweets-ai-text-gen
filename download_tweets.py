@@ -4,10 +4,11 @@ import re
 import csv
 from tqdm import tqdm
 import logging
+from datetime import datetime
 
-# Surpress twint warnings
+# Surpress some twint warnings
 logger = logging.getLogger()
-logger.disabled = True
+logging.disable(logging.CRITICAL)
 
 
 def is_reply(tweet):
@@ -63,11 +64,6 @@ def download_tweets(username=None, limit=None, include_replies=False,
     if strip_hashtags:
         pattern += r'|#[a-zA-Z0-9_]+'
 
-    c = twint.Config()
-    c.Store_object = True
-    c.Hide_output = True
-    c.Username = username
-    c.Limit = 20
     until = None
 
     print("Retrieving tweets for @{}...".format(username))
@@ -79,6 +75,12 @@ def download_tweets(username=None, limit=None, include_replies=False,
         pbar = tqdm(range(limit))
         for _ in range((limit // 20)):
             tweet_data = []
+            
+            c = twint.Config()
+            c.Store_object = True
+            c.Hide_output = True
+            c.Username = username
+            c.Limit = 20
             c.Until = until
             c.Store_object_tweets_list = tweet_data
 
@@ -100,9 +102,12 @@ def download_tweets(username=None, limit=None, include_replies=False,
                     w.writerow([tweet])
 
             pbar.update(20)
-            until = str(tweet_data[-1].datestamp) + \
-                " " + str(tweet_data[-1].timestamp)
+            until = (datetime
+                     .utcfromtimestamp(tweet_data[-1].datetime / 1000.0 - 1)
+                     .strftime('%Y-%m-%d %H:%M:%S'))
+
     pbar.close()
+    print("All Tweets retrieved since {}".format(until))
 
 
 if __name__ == "__main__":
