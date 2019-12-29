@@ -76,16 +76,24 @@ def download_tweets(username=None, limit=None, include_replies=False,
         for _ in range((limit // 20)):
             tweet_data = []
 
-            while len(tweet_data) == 0:
-                c = twint.Config()
-                c.Store_object = True
-                c.Hide_output = True
-                c.Username = username
-                c.Limit = 20
-                c.Until = until
-                c.Store_object_tweets_list = tweet_data
+            # twint may fail; give it up to 5 tries to return tweets
+            for _ in range(0, 4):
+                if len(tweet_data) == 0:
+                    c = twint.Config()
+                    c.Store_object = True
+                    c.Hide_output = True
+                    c.Username = username
+                    c.Limit = 20
+                    c.Until = until
+                    c.Store_object_tweets_list = tweet_data
 
-                twint.run.Search(c)
+                    twint.run.Search(c)
+                else:
+                    continue
+
+            # If still no tweets after multiple tries, we're done
+            if len(tweet_data) == 0:
+                break
 
             if not include_replies:
                 tweets = [re.sub(pattern, '', tweet.tweet).strip()
