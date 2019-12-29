@@ -20,7 +20,7 @@ def is_reply(tweet):
     conversations = [user['username'] in tweet.tweet for user in users]
 
     # If any if the usernames are not present in text, then it must be a reply
-    if sum(conversations) <= len(users):
+    if sum(conversations) < len(users):
         return True
     return False
 
@@ -52,8 +52,8 @@ def download_tweets(username=None, limit=10000, include_replies=False,
     c.Store_object = True
     c.Hide_output = True
     c.Username = username
-    c.Limit = limit
-    since = None
+    c.Limit = 20
+    until = None
 
     print("Retrieving tweets for @{}...".format(username))
 
@@ -64,12 +64,12 @@ def download_tweets(username=None, limit=10000, include_replies=False,
         pbar = tqdm(range(limit))
         for _ in range((limit // 20)):
             tweet_data = []
-            c.Since = since
+            c.Until = until
             c.Store_object_tweets_list = tweet_data
 
             twint.run.Search(c)
 
-            if include_replies:
+            if not include_replies:
                 tweets = [re.sub(pattern, '', tweet.tweet).strip()
                           for tweet in tweet_data
                           if not is_reply(tweet)]
@@ -82,7 +82,8 @@ def download_tweets(username=None, limit=10000, include_replies=False,
                     w.writerow([tweet])
 
             pbar.update(20)
-            since = tweet_data[-1].id
+            until = str(tweet_data[-1].datestamp) + \
+                " " + str(tweet_data[-1].timestamp)
     pbar.close()
 
 
