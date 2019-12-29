@@ -6,7 +6,7 @@ from tqdm import tqdm
 import logging
 from datetime import datetime
 
-# Surpress twint warnings which occur for no reason
+# Surpress random twint warnings
 logger = logging.getLogger()
 logger.disabled = True
 
@@ -33,8 +33,8 @@ def is_reply(tweet):
 
 def download_tweets(username=None, limit=None, include_replies=False,
                     strip_usertags=True, strip_hashtags=False):
-    """Generates a twcloud of any public Twitter account or search query!
-    See stylecloud docs for additional parameters.
+    """Download public Tweets from a given Twitter account
+    into a format suitable for training with AI text generation tools.
     :param username: Twitter @ username to gather tweets.
     :param limit: # of tweets to gather; None for all tweets.
     :param include_replies: Whether to include replies to other tweets.
