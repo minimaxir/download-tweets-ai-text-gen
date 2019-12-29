@@ -2,6 +2,7 @@ import twint
 import fire
 import re
 import csv
+from tqdm import tqdm
 
 
 def is_reply(tweet):
@@ -19,11 +20,12 @@ def is_reply(tweet):
     conversations = [user['username'] in tweet.tweet for user in users]
 
     # If any if the usernames are not present in text, then it must be a reply
-    if sum(conversations) < len(users):
+    if sum(conversations) <= len(users):
         return True
     return False
 
-def download_tweets(username=None, limit=None, include_replies=False,
+
+def download_tweets(username=None, limit=10000, include_replies=False,
                     strip_usertags=True, strip_hashtags=False):
     """Generates a twcloud of any public Twitter account or search query!
     See stylecloud docs for additional parameters.
@@ -51,7 +53,6 @@ def download_tweets(username=None, limit=None, include_replies=False,
     c.Hide_output = True
     c.Username = username
     c.Limit = limit
-    c.Custom['tweet'] = ['id', 'tweet', 'reply_to']
     since = None
 
     print("Retrieving tweets for @{}...".format(username))
@@ -60,6 +61,7 @@ def download_tweets(username=None, limit=None, include_replies=False,
         w = csv.writer(f)
         w.writerow(['tweets'])  # gpt-2-simple expects a CSV header by default
 
+        pbar = tqdm(range(limit))
         for _ in range((limit // 20)):
             tweet_data = []
             c.Since = since
@@ -79,8 +81,9 @@ def download_tweets(username=None, limit=None, include_replies=False,
                 if tweet != '':
                     w.writerow([tweet])
 
-            print(len(tweet_data))
+            pbar.update(20)
             since = tweet_data[-1].id
+    pbar.close()
 
 
 if __name__ == "__main__":
