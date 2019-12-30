@@ -15,7 +15,7 @@ Inspired by popular demand due to the success of [@dril_gpt2](https://twitter.co
 First, install the Python script dependencies:
 
 ```sh
-pip3 install twint fire tqdm
+pip3 install twint==2.1.4 fire tqdm
 ```
 
 Then download the `download_tweets.py` script from this repo.
