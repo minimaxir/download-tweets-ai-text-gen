@@ -32,7 +32,7 @@ def is_reply(tweet):
 
 
 def download_tweets(username=None, limit=None, include_replies=False,
-                    strip_usertags=True, strip_hashtags=False):
+                    strip_usertags=False, strip_hashtags=False):
     """Download public Tweets from a given Twitter account
     into a format suitable for training with AI text generation tools.
     :param username: Twitter @ username to gather tweets.
