@@ -5,6 +5,7 @@ import csv
 from tqdm import tqdm
 import logging
 from datetime import datetime
+from time import sleep
 
 # Surpress random twint warnings
 logger = logging.getLogger()
@@ -29,6 +30,13 @@ def is_reply(tweet):
     if sum(conversations) < len(users):
         return True
     return False
+
+def update_resume_file(tweet_id):
+    """
+    Writes the latest tweet id to a temp file so the scrape can resume.
+    """
+    with open('.temp', 'w', encoding='utf-8') as f:
+        f.write(str(tweet_id))
 
 
 def download_tweets(username=None, limit=None, include_replies=False,
@@ -56,7 +64,7 @@ def download_tweets(username=None, limit=None, include_replies=False,
         twint.run.Lookup(c_lookup)
         limit = twint.output.users_list[0].tweets
 
-    pattern = r'http\S+|pic.\S+|\xa0|…'
+    pattern = r'http\S+|pic\.\S+|\xa0|…'
 
     if strip_usertags:
         pattern += r'|@[a-zA-Z0-9_]+'
@@ -64,7 +72,7 @@ def download_tweets(username=None, limit=None, include_replies=False,
     if strip_hashtags:
         pattern += r'|#[a-zA-Z0-9_]+'
 
-    until = None
+    update_resume_file(-1)
 
     print("Retrieving tweets for @{}...".format(username))
 
@@ -73,7 +81,7 @@ def download_tweets(username=None, limit=None, include_replies=False,
         w.writerow(['tweets'])  # gpt-2-simple expects a CSV header by default
 
         pbar = tqdm(range(limit))
-        for _ in range((limit // 20)):
+        for i in range((limit // 20) - 1):
             tweet_data = []
 
             # twint may fail; give it up to 5 tries to return tweets
@@ -83,17 +91,25 @@ def download_tweets(username=None, limit=None, include_replies=False,
                     c.Store_object = True
                     c.Hide_output = True
                     c.Username = username
-                    c.Limit = 20
-                    c.Until = until
+                    c.Limit = 40
+                    c.Resume = '.temp'
+
                     c.Store_object_tweets_list = tweet_data
 
                     twint.run.Search(c)
+
+                    # If it fails, sleep before retry.
+                    if len(tweet_data) == 0:
+                        sleep(1.0)
                 else:
                     continue
 
             # If still no tweets after multiple tries, we're done
             if len(tweet_data) == 0:
                 break
+
+            if i > 0:
+                tweet_data = tweet_data[20:]
 
             if not include_replies:
                 tweets = [re.sub(pattern, '', tweet.tweet).strip()
@@ -107,13 +123,17 @@ def download_tweets(username=None, limit=None, include_replies=False,
                 if tweet != '':
                     w.writerow([tweet])
 
-            pbar.update(20)
-            until = (datetime
-                     .utcfromtimestamp(tweet_data[-1].datetime / 1000.0 - 1)
+            if i > 0:
+                pbar.update(20)
+            else:
+                pbar.update(40)
+            most_recent_tweet = (datetime
+                     .utcfromtimestamp(tweet_data[-1].datetime / 1000.0)
                      .strftime('%Y-%m-%d %H:%M:%S'))
+            # pbar.write(most_recent_tweet)
 
     pbar.close()
-    print("All Tweets retrieved since {}".format(until))
+    print("All Tweets retrieved since {}".format(most_recent_tweet))
 
 
 if __name__ == "__main__":
