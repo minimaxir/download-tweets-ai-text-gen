@@ -38,15 +38,15 @@ The parameters you can pass to the command line interface (positionally or expli
 
 * username: Username of the account whose tweets you want to download [required]
 * limit: Number of tweets to download [default: all tweets possible]
-* include_replies: Include replies and quote tweets from the user in the dataset [default: False]
-* strip_usertags: Strips out `@` user tags in the tweet text [default: True]
+* include_replies: Include replies from the user in the dataset [default: False]
+* strip_usertags: Strips out `@` user tags in the tweet text [default: False]
 * strip_hashtags: Strips out `#` hashtags in the tweet text [default: False]
 
 ## How to Train an AI on the downloaded tweets
 
 [gpt-2-simple](https://github.com/minimaxir/gpt-2-simple) has a special case for single-column CSVs, where it will automatically process the text for best training and generation.
 
-You can use [this Colaboratory notebook](https://colab.research.google.com/drive/1qxcQ2A1nNjFudAGN_mcMOnvV9sF_PkEb) (optimized from the original notebook for this use case) to train the model on your downloaded tweets, and generate massive amounts of Tweets from it. Note that without a lot of data, the model might easily overfit; you may want to train for fewer `steps`.
+You can use [this Colaboratory notebook](https://colab.research.google.com/drive/1qxcQ2A1nNjFudAGN_mcMOnvV9sF_PkEb) (optimized from the original notebook for this use case) to train the model on your downloaded tweets, and generate massive amounts of Tweets from it. Note that without a lot of data, the model might easily overfit; you may want to train for fewer `steps` (e.g. `500`).
 
 When generating, you'll always need to include certain parameters to decode the tweets, e.g.:
 
