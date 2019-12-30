@@ -31,6 +31,7 @@ def is_reply(tweet):
         return True
     return False
 
+
 def update_resume_file(tweet_id):
     """
     Writes the latest tweet id to a temp file so the scrape can resume.
@@ -80,7 +81,8 @@ def download_tweets(username=None, limit=None, include_replies=False,
         w = csv.writer(f)
         w.writerow(['tweets'])  # gpt-2-simple expects a CSV header by default
 
-        pbar = tqdm(range(limit))
+        pbar = tqdm(range(limit),
+                    desc="Latest Tweet")
         for i in range((limit // 20) - 1):
             tweet_data = []
 
@@ -128,12 +130,11 @@ def download_tweets(username=None, limit=None, include_replies=False,
             else:
                 pbar.update(40)
             most_recent_tweet = (datetime
-                     .utcfromtimestamp(tweet_data[-1].datetime / 1000.0)
-                     .strftime('%Y-%m-%d %H:%M:%S'))
-            # pbar.write(most_recent_tweet)
+                                 .utcfromtimestamp(tweet_data[-1].datetime / 1000.0)
+                                 .strftime('%Y-%m-%d %H:%M:%S'))
+            pbar.set_description("Latest Tweet: " + most_recent_tweet)
 
     pbar.close()
-    print("All Tweets retrieved since {}".format(most_recent_tweet))
 
 
 if __name__ == "__main__":
