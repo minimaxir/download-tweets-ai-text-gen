@@ -6,6 +6,7 @@ from tqdm import tqdm
 import logging
 from datetime import datetime
 from time import sleep
+import os
 
 # Surpress random twint warnings
 logger = logging.getLogger()
@@ -135,6 +136,7 @@ def download_tweets(username=None, limit=None, include_replies=False,
             pbar.set_description("Latest Tweet: " + most_recent_tweet)
 
     pbar.close()
+    os.remove('.temp')
 
 
 if __name__ == "__main__":
