@@ -83,7 +83,7 @@ def download_tweets(username=None, limit=None, include_replies=False,
         w.writerow(['tweets'])  # gpt-2-simple expects a CSV header by default
 
         pbar = tqdm(range(limit),
-                    desc="Latest Tweet")
+                    desc="Oldest Tweet")
         for i in range((limit // 20) - 1):
             tweet_data = []
 
@@ -130,10 +130,10 @@ def download_tweets(username=None, limit=None, include_replies=False,
                 pbar.update(20)
             else:
                 pbar.update(40)
-            most_recent_tweet = (datetime
-                                 .utcfromtimestamp(tweet_data[-1].datetime / 1000.0)
-                                 .strftime('%Y-%m-%d %H:%M:%S'))
-            pbar.set_description("Latest Tweet: " + most_recent_tweet)
+            oldest_tweet = (datetime
+                            .utcfromtimestamp(tweet_data[-1].datetime / 1000.0)
+                            .strftime('%Y-%m-%d %H:%M:%S'))
+            pbar.set_description("Oldest Tweet: " + oldest_tweet)
 
     pbar.close()
     os.remove('.temp')
