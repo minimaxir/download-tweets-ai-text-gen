@@ -44,7 +44,7 @@ The parameters you can pass to the command line interface (positionally or expli
 
 ## How to Train an AI on the downloaded tweets
 
-[gpt-2-simple](https://github.com/minimaxir/gpt-2-simple) has a special case for single-column CSVs, where it will automatically process the text for best training and generation.
+[gpt-2-simple](https://github.com/minimaxir/gpt-2-simple) has a special case for single-column CSVs, where it will automatically process the text for best training and generation. (i.e. by adding `<|startoftext|>` and `<|endoftext|>` to each tweet, allowing independent generation of tweets)
 
 You can use [this Colaboratory notebook](https://colab.research.google.com/drive/1qxcQ2A1nNjFudAGN_mcMOnvV9sF_PkEb) (optimized from the original notebook for this use case) to train the model on your downloaded tweets, and generate massive amounts of Tweets from it. Note that without a lot of data, the model might easily overfit; you may want to train for fewer `steps` (e.g. `500`).
 
@@ -53,7 +53,7 @@ When generating, you'll always need to include certain parameters to decode the 
 ```python
 gpt2.generate(sess,
               length=200,
-              temperature=1.0,
+              temperature=0.7,
               prefix='<|startoftext|>',
               truncate='<|endoftext|>',
               include_prefix=False
