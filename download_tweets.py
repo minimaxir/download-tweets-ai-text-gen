@@ -33,14 +33,6 @@ def is_reply(tweet):
     return False
 
 
-def update_resume_file(tweet_id):
-    """
-    Writes the latest tweet id to a temp file so the scrape can resume.
-    """
-    with open('.temp', 'w', encoding='utf-8') as f:
-        f.write(str(tweet_id))
-
-
 def download_tweets(username=None, limit=None, include_replies=False,
                     strip_usertags=False, strip_hashtags=False):
     """Download public Tweets from a given Twitter account
@@ -74,7 +66,9 @@ def download_tweets(username=None, limit=None, include_replies=False,
     if strip_hashtags:
         pattern += r'|#[a-zA-Z0-9_]+'
 
-    update_resume_file(-1)
+    # Create an empty file to store pagination id
+    with open('.temp', 'w', encoding='utf-8') as f:
+        f.write(str(-1))
 
     print("Retrieving tweets for @{}...".format(username))
 
