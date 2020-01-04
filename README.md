@@ -26,7 +26,7 @@ The script is interacted via a command line interface. After `cd`ing into the di
 python3 download_tweets.py <twitter_username>
 ```
 
-e.g. If you want to download all tweets (sans retweets/replies/quote tweets) from Twitter user [@dril](https://twitter.com/dril_gpt2), run:
+e.g. If you want to download all tweets (sans retweets/replies) from Twitter user [@dril](https://twitter.com/dril_gpt2), run:
 
 ```sh
 python3 download_tweets.py dril
@@ -38,7 +38,7 @@ The parameters you can pass to the command line interface (positionally or expli
 
 * username: Username of the account whose tweets you want to download [required]
 * limit: Number of tweets to download [default: all tweets possible]
-* include_replies: Include replies from the user in the dataset [default: False]
+* include_replies: Include replies from the user to other users in the dataset. Does not affect threads/quote tweets. [default: False]
 * strip_usertags: Strips out `@` user tags in the tweet text [default: False]
 * strip_hashtags: Strips out `#` hashtags in the tweet text [default: False]
 

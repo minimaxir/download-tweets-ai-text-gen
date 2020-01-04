@@ -13,26 +13,6 @@ logger = logging.getLogger()
 logger.disabled = True
 
 
-def is_reply(tweet):
-    """
-    Determines if the tweet is a reply to another tweet.
-    Requires somewhat hacky heuristics since not included w/ twint
-    """
-
-    # If not a reply to another user, there will only be 1 entry in reply_to
-    if len(tweet.reply_to) == 1:
-        return False
-
-    # Check to see if any of the other users "replied" are in the tweet text
-    users = tweet.reply_to[1:]
-    conversations = [user['username'] in tweet.tweet for user in users]
-
-    # If any if the usernames are not present in text, then it must be a reply
-    if sum(conversations) < len(users):
-        return True
-    return False
-
-
 def download_tweets(username=None, limit=None, include_replies=False,
                     strip_usertags=False, strip_hashtags=False):
     """Download public Tweets from a given Twitter account
@@ -59,6 +39,7 @@ def download_tweets(username=None, limit=None, include_replies=False,
         limit = twint.output.users_list[0].tweets
 
     pattern = r'http\S+|pic\.\S+|\xa0|…'
+    user_tweet_ids = set()
 
     if strip_usertags:
         pattern += r'|@[a-zA-Z0-9_]+'
@@ -77,7 +58,8 @@ def download_tweets(username=None, limit=None, include_replies=False,
         w.writerow(['tweets'])  # gpt-2-simple expects a CSV header by default
 
         pbar = tqdm(range(limit),
-                    desc="Oldest Tweet")
+                    desc="Oldest Tweet",
+                    smoothing=0)
         for i in range((limit // 20) - 1):
             tweet_data = []
 
@@ -109,9 +91,19 @@ def download_tweets(username=None, limit=None, include_replies=False,
                 tweet_data = tweet_data[20:]
 
             if not include_replies:
+                # Top-level tweets have the same id and conversation_id.
+                # However, tweet threads also follow this, so must check
+                # if a conversation_id matches any top-level tweet
+
+                # Note: May fail if original tweet is not in the current batch
+
+                top_level_tweets = [
+                    str(tweet.id) for tweet in tweet_data if str(tweet.id) == tweet.conversation_id]
+                user_tweet_ids.update(top_level_tweets)
+
                 tweets = [re.sub(pattern, '', tweet.tweet).strip()
                           for tweet in tweet_data
-                          if not is_reply(tweet)]
+                          if tweet.conversation_id in user_tweet_ids]
             else:
                 tweets = [re.sub(pattern, '', tweet.tweet).strip()
                           for tweet in tweet_data]
