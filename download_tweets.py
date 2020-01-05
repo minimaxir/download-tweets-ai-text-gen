@@ -112,13 +112,19 @@ def download_tweets(username=None, limit=None, include_replies=False,
                 tweets = [re.sub(pattern, '', tweet.tweet).strip()
                           for tweet in tweet_data
                           if not is_reply(tweet)]
+
+                # On older tweets, if the cleaned tweet starts with an "@",
+                # it is a de-facto reply.
+                for tweet in tweets:
+                    if tweet != '' and not tweet.startswith('@'):
+                        w.writerow([tweet])
             else:
                 tweets = [re.sub(pattern, '', tweet.tweet).strip()
                           for tweet in tweet_data]
 
-            for tweet in tweets:
-                if tweet != '':
-                    w.writerow([tweet])
+                for tweet in tweets:
+                    if tweet != '':
+                        w.writerow([tweet])
 
             if i > 0:
                 pbar.update(20)
