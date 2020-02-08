@@ -130,10 +130,11 @@ def download_tweets(username=None, limit=None, include_replies=False,
                 pbar.update(20)
             else:
                 pbar.update(40)
-            oldest_tweet = (datetime
-                            .utcfromtimestamp(tweet_data[-1].datetime / 1000.0)
-                            .strftime('%Y-%m-%d %H:%M:%S'))
-            pbar.set_description("Oldest Tweet: " + oldest_tweet)
+            if tweet_data:
+                oldest_tweet = (datetime
+                               .utcfromtimestamp(tweet_data[-1].datetime / 1000.0)
+                               .strftime('%Y-%m-%d %H:%M:%S'))
+                pbar.set_description("Oldest Tweet: " + oldest_tweet)
 
     pbar.close()
     os.remove('.temp')
