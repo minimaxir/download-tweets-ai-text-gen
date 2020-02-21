@@ -59,11 +59,12 @@ def download_tweets(username=None, limit=None, include_replies=False,
         filename = username
         pathfilename = os.path.join(dir_path, filename)
         with open(pathfilename, 'r') as f:
-            [usernames.append(username) for username in f]
+            [usernames.append(username.rstrip('\n')) for username in f]
                 
     
     #If username is not a .txt file, append username to usernames list
     else:
+        filename = username
         usernames.append(username)
     
     # Download tweets for all usernames and write to file
@@ -76,9 +77,6 @@ def download_tweets(username=None, limit=None, include_replies=False,
             tweets = download_account_tweets(username, limit, include_replies, strip_usertags, strip_hashtags)
             
             [w.writerow([tweet]) for tweet in tweets]
-            
-        
-    print("End!")
     
 
 def download_account_tweets(username=None, limit=None, include_replies=False,
@@ -104,7 +102,7 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
         c_lookup.Hide_output = True
 
         twint.run.Lookup(c_lookup)
-        limit = twint.output.users_list[0].tweets
+        limit = twint.output.users_list[-1].tweets
 
     pattern = r'http\S+|pic\.\S+|\xa0|…'
 
