@@ -142,7 +142,7 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
 
                 # If it fails, sleep before retry.
                 if len(tweet_data) == 0:
-                    sleep(1.0)
+                    sleep(60.0)
             else:
                 continue
 
