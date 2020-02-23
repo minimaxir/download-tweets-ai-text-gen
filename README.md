@@ -32,11 +32,17 @@ e.g. If you want to download all tweets (sans retweets/replies/quote tweets) fro
 python3 download_tweets.py dril
 ```
 
-The tweets will be downloaded to a single-column CSV titled `<username>_tweets.csv`.
+The script can can also download tweets from multiple usernames at one time.  To do so, first create a text file (.txt) with the list of usernames.  Then, run script referencing the file name:
+
+```sh
+python3 download_tweets.py <twitter_usernames_file_name>
+```
+
+The tweets will be downloaded to a single-column CSV titled `<usernames>_tweets.csv`.
 
 The parameters you can pass to the command line interface (positionally or explicitly) are:
 
-* username: Username of the account whose tweets you want to download [required]
+* username: Username of the account whose tweets or .txt file name with multiple usernames you want to download [required]
 * limit: Number of tweets to download [default: all tweets possible]
 * include_replies: Include replies from the user in the dataset [default: False]
 * strip_usertags: Strips out `@` user tags in the tweet text [default: False]
@@ -64,6 +70,7 @@ gpt2.generate(sess,
 
 * Retweets are not included in the downloaded dataset. (which is generally a good thing)
 * You'll need *thousands* of tweets at minimum to feed to the input model for a good generation results. (ideally 1 MB of input text data, although with tweets that hard to achieve)
+* To help you reach the 1 MB of input text data, you can load data from multiple similar Twitter usernames
 * The download will likely end much earlier than the theoretical limit (inferred from the user profile) as the limit includes retweets/replies/whatever cache shennanigans Twitter is employing.
 * The legalities of distributing downloaded tweets is ambigious, therefore it's recommended avoiding commiting raw Twitter data to GitHub, and is the reason examples of such data is not included in this repo. (AI-generated tweets themselves likely fall under derivative work/parody protected by Fair Use)
 
