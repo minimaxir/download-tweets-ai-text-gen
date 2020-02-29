@@ -34,7 +34,7 @@ def is_reply(tweet):
 
 
 def download_tweets(username=None, limit=None, include_replies=False,
-                    strip_usertags=False, strip_hashtags=False):
+                    strip_usertags=False, strip_hashtags=False, include_links=False):
     """Download public Tweets from multiple Twitter accounts into a format suitable
     for training with AI text generation tools.
     :param username: Twitter @ username to gather tweets or .txt file name with multiple usernames
@@ -42,6 +42,7 @@ def download_tweets(username=None, limit=None, include_replies=False,
     :param include_replies: Whether to include replies to other tweets.
     :param strip_usertags: Whether to remove user tags from the tweets.
     :param strip_hashtags: Whether to remove hashtags from the tweets.
+    :param include_links: Whether to include tweets with links.
     """
     
     # Validate that a username or .txt file name is specified
@@ -74,19 +75,21 @@ def download_tweets(username=None, limit=None, include_replies=False,
         
         
         for username in usernames:
-            tweets = download_account_tweets(username, limit, include_replies, strip_usertags, strip_hashtags)
+            tweets = download_account_tweets(username, limit, include_replies, strip_usertags, strip_hashtags, include_links)
             
             [w.writerow([tweet]) for tweet in tweets]
     
 
 def download_account_tweets(username=None, limit=None, include_replies=False,
-                    strip_usertags=False, strip_hashtags=False):
+                    strip_usertags=False, strip_hashtags=False, 
+                    include_links=False):
     """Download public Tweets from a given Twitter account and return as a list
     :param username: Twitter @ username to gather tweets.
     :param limit: # of tweets to gather; None for all tweets.
     :param include_replies: Whether to include replies to other tweets.
     :param strip_usertags: Whether to remove user tags from the tweets.
     :param strip_hashtags: Whether to remove hashtags from the tweets.
+    :param include_links: Whether to include tweets with links.
     :return tweets: List of tweets from the Twitter account
     """
 
@@ -100,6 +103,10 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
         c_lookup.Username = username
         c_lookup.Store_object = True
         c_lookup.Hide_output = True
+        if include_links == True:
+            c_lookup.Links = 'include'
+        else:
+            c_lookup.Links = 'exclude'
 
         twint.run.Lookup(c_lookup)
         limit = twint.output.users_list[-1].tweets
