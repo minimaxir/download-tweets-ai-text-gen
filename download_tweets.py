@@ -51,13 +51,15 @@ def download_tweets(username=None, limit=None, include_replies=False,
     # Create an empty list of usernames for which to dowload tweets
     usernames = []
     
+	filename = username
+	
     # Get the file's current directory
     dir_path = os.path.dirname(os.path.realpath(__file__))
     
     # If username is a .txt file, append all usernames to usernames list
     if username[-4:] == ".txt":
         # Open username file and copy usernames to usernames list
-        filename = username
+        
         pathfilename = os.path.join(dir_path, filename)
         with open(pathfilename, 'r') as f:
             [usernames.append(username.rstrip('\n')) for username in f]
