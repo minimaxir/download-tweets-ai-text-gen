@@ -50,8 +50,7 @@ def download_tweets(username=None, limit=None, include_replies=False,
     
     # Create an empty list of usernames for which to dowload tweets
     usernames = []
-    
-	filename = username
+    filename = username
 	
     # Get the file's current directory
     dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -151,7 +150,7 @@ def download_account_tweets(username=None, limit=None, include_replies=False,
 
                 # If it fails, sleep before retry.
                 if len(tweet_data) == 0:
-                    sleep(60.0)
+                    sleep(15.0)
             else:
                 continue
 
