@@ -47,9 +47,11 @@ def download_tweets(
     :param include_replies: Whether to include replies to other tweets.
     :param strip_usertags: Whether to remove user tags from the tweets.
     :param strip_hashtags: Whether to remove hashtags from the tweets.
+    :param include_links: Whether to include tweets with links.
+    :return tweets: List of tweets from the Twitter account
     """
 
-    assert username, "You must specify a username to download tweets from."
+    # If a limit is specificed, validate that it is a multiple of 20
     if limit:
         assert limit % 20 == 0, "`limit` must be a multiple of 20."
 
@@ -59,9 +61,13 @@ def download_tweets(
         c_lookup.Username = username
         c_lookup.Store_object = True
         c_lookup.Hide_output = True
+        if include_links == True:
+            c_lookup.Links = 'include'
+        else:
+            c_lookup.Links = 'exclude'
 
         twint.run.Lookup(c_lookup)
-        limit = twint.output.users_list[0].tweets
+        limit = twint.output.users_list[-1].tweets
 
     pattern = r"http\S+|pic\.\S+|\xa0|…"
 
@@ -71,6 +77,9 @@ def download_tweets(
     if strip_hashtags:
         pattern += r"|#[a-zA-Z0-9_]+"
 
+    # Create an empty list of tweets to output
+    tweets_output = []
+    
     # Create an empty file to store pagination id
     with open(".temp", "w", encoding="utf-8") as f:
         f.write(str(-1))
@@ -107,10 +116,14 @@ def download_tweets(
 
             # If still no tweets after multiple tries, we're done
             if len(tweet_data) == 0:
-                break
+                c = twint.Config()
+                c.Store_object = True
+                c.Hide_output = True
+                c.Username = username
+                c.Limit = 40
+                c.Resume = '.temp'
 
-            if i > 0:
-                tweet_data = tweet_data[20:]
+                c.Store_object_tweets_list = tweet_data
 
             if not include_replies:
                 tweets = [
@@ -142,7 +155,7 @@ def download_tweets(
                 tweet_data[-1].datetime / 1000.0
             ).strftime("%Y-%m-%d %H:%M:%S")
             pbar.set_description("Oldest Tweet: " + oldest_tweet)
-
+            
     pbar.close()
     os.remove(".temp")
 
