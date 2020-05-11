@@ -37,6 +37,7 @@ def download_tweets(
     username=None,
     limit=None,
     include_replies=False,
+    include_links=False,
     strip_usertags=False,
     strip_hashtags=False,
 ):
@@ -61,10 +62,10 @@ def download_tweets(
         c_lookup.Username = username
         c_lookup.Store_object = True
         c_lookup.Hide_output = True
-        if include_links == True:
-            c_lookup.Links = 'include'
+        if include_links is True:
+            c_lookup.Links = "include"
         else:
-            c_lookup.Links = 'exclude'
+            c_lookup.Links = "exclude"
 
         twint.run.Lookup(c_lookup)
         limit = twint.output.users_list[-1].tweets
@@ -77,9 +78,6 @@ def download_tweets(
     if strip_hashtags:
         pattern += r"|#[a-zA-Z0-9_]+"
 
-    # Create an empty list of tweets to output
-    tweets_output = []
-    
     # Create an empty file to store pagination id
     with open(".temp", "w", encoding="utf-8") as f:
         f.write(str(-1))
@@ -121,7 +119,7 @@ def download_tweets(
                 c.Hide_output = True
                 c.Username = username
                 c.Limit = 40
-                c.Resume = '.temp'
+                c.Resume = ".temp"
 
                 c.Store_object_tweets_list = tweet_data
 
@@ -139,8 +137,7 @@ def download_tweets(
                         w.writerow([tweet])
             else:
                 tweets = [
-                    re.sub(pattern, "", tweet.tweet).strip()
-                    for tweet in tweet_data
+                    re.sub(pattern, "", tweet.tweet).strip() for tweet in tweet_data
                 ]
 
                 for tweet in tweets:
@@ -155,7 +152,7 @@ def download_tweets(
                 tweet_data[-1].datetime / 1000.0
             ).strftime("%Y-%m-%d %H:%M:%S")
             pbar.set_description("Oldest Tweet: " + oldest_tweet)
-            
+
     pbar.close()
     os.remove(".temp")
 
